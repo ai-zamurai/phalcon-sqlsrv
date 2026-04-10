@@ -1,7 +1,7 @@
 ---
 id: deployment
 title: Release & Deployment
-version: 1.0.0
+version: 1.1.0
 status: active
 created: 2026-04-10
 updated: 2026-04-10
@@ -24,6 +24,8 @@ This package is distributed as a Composer library on Packagist. There is no serv
 - Source: `https://github.com/ai-zamurai/phalcon-sqlsrv`
 - Registry: Packagist (auto-updates from GitHub webhook)
 
+Initial registration on Packagist is **manual and one-time** per package name. Submit the repository URL once at https://packagist.org/packages/submit; Packagist auto-configures a `push`-event webhook on success, and every subsequent tag push is picked up automatically (~1 minute). Confirm the package is registered with `curl -sS -o /dev/null -w "%{http_code}\n" "https://repo.packagist.org/p2/ai-zamurai/phalcon-sqlsrv.json"` — a `200` response means the package is registered on Packagist (`404` means initial submission is still required).
+
 ## Versioning
 
 Semantic versioning (`MAJOR.MINOR.PATCH`):
@@ -41,6 +43,7 @@ Always tag with a leading `v` (e.g. `v1.2.3`).
 3. Manual smoke test (see `04-quality/TESTING.md`) passes against a real SQL Server instance.
 4. `DECISIONS.md` updated if the change alters observable behavior.
 5. Frontmatter `version` bumps applied to any edited docs.
+6. Packagist registration confirmed (see [Release Channel](#release-channel) above) — required once per new package name.
 
 ## Release Steps
 
