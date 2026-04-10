@@ -1,0 +1,72 @@
+# Cursor Rules — phalcon-sqlsrv
+
+Load these rules before suggesting code in this repository.
+
+## Project
+
+ai-zamurai/phalcon-sqlsrv — a Composer library providing a Microsoft SQL Server PDO adapter for the Phalcon PHP framework (Phalcon 4+). Forked from bakaphp/phalcon-sqlsrv. Canonical documentation lives under `docs/`; start at `docs/MASTER.md`.
+
+## Stack
+
+- PHP >= 7.4
+- ext-phalcon >= 4.0
+- ext-pdo + pdo_sqlsrv (or MS ODBC Driver 17+)
+- SQL Server 2012+ target
+- PSR-4 autoload via Composer; no build step
+
+## Source Layout
+
+```
+Phalcon/Db/Adapter/Pdo/Sqlsrv.php   — PDO adapter (owns PDO, fires events, introspects schema)
+Phalcon/Db/Dialect/Sqlsrv.php       — SQL dialect (pure string generation)
+Phalcon/Db/Result/PdoSqlsrv.php     — result wrapper (extends Phalcon\Db\Result\Pdo)
+Phalcon/Db/DbListener.php           — optional debug listener
+Phalcon/Logger/Adapter/Database.php — DB-backed logger adapter
+```
+
+## Hard Rules
+
+1. Keep namespaces `Phalcon\Db\…` and `Phalcon\Logger\…`. Never rename.
+2. Every public method must match the Phalcon 4 parent signature including return type hints.
+3. The dialect is pure: no PDO calls, no I/O, no events inside `Phalcon\Db\Dialect\Sqlsrv`.
+4. Wrap SQL Server identifiers in square brackets: `[column_name]`.
+5. Throw `Phalcon\Db\Exception` for unknown column types instead of falling back silently.
+6. DSN defaults `LoginTimeout=3` and `TrustServerCertificate=true` are intentional — see `docs/06-reference/DECISIONS.md` ADR-002 and ADR-003. Do not remove them.
+7. Never add Composer dependencies without an ADR entry.
+8. No secrets in commits.
+
+## Code Style
+
+- 4-space indentation, no tabs
+- Always `<?php`, never short tags
+- Keep existing `@param` / `@return` docblocks
+- English comments only
+- No trailing whitespace
+
+## Documentation Language
+
+English only for everything under `docs/`, plus `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and this file. GitHub Issues and Pull Requests stay Japanese per the maintainer's global policy.
+
+## Git Workflow
+
+- Create an issue first (Japanese text is fine).
+- Branch from `develop`, never from `master`: `<type>/#<issue>-<slug>` (types: feature, fix, docs, chore).
+- Commit header: `<type>: #<issue> <summary>` (Conventional Commits).
+- PR target: `develop`. Never `master`.
+- Full workflow in `docs/05-operations/GIT_WORKFLOW.md`.
+
+## Release
+
+Merge `develop` into `master`, tag `vMAJOR.MINOR.PATCH`, push. Packagist webhook handles distribution. Steps in `docs/05-operations/DEPLOYMENT.md`.
+
+## Never Suggest
+
+- Namespace rewrites
+- Silent type coercion in the dialect's default branch
+- Removing DSN defaults
+- Mixing SQL generation and PDO execution in one class
+- Direct commits to `master` or `develop`
+
+## When Unsure
+
+Read the existing code in `Phalcon/` and the relevant doc under `docs/` before writing new code. When a request conflicts with `docs/06-reference/DECISIONS.md`, stop and escalate.
