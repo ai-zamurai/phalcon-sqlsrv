@@ -19,12 +19,13 @@ use Phalcon\Db\Result\PdoSqlsrv as ResultPdo;
  * </code>.
  *
  * @property \Phalcon\Db\Dialect\Sqlsrv $_dialect
+ * @property \Phalcon\Config\Config $config
  */
-class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInterface
+class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\Adapter\AdapterInterface
 {
 
-    protected $_type = 'sqlsrv';
-    protected $_dialectType = 'sqlsrv';
+    protected $type = 'sqlsrv';
+    protected $dialectType = 'sqlsrv';
 
     /**
      * This method is automatically called in Phalcon\Db\Adapter\Pdo constructor.
@@ -34,45 +35,35 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      *
      * @return bool
      */
-    public function connect(array $descriptor = null)
+    public function connect(?array $descriptor = []): void
     {
         if (is_null($descriptor) === true) {
-            $descriptor = $this->_descriptor;
+            $descriptor = $this->descriptor;
         }
 
-        /*
-         * Check if the developer has defined custom options or create one from scratch
-         */
-        if (isset($descriptor['options']) === true) {
-            $options = $descriptor['options'];
-            unset($descriptor['options']);
-        } else {
-            $options = array();
+        if (!array_key_exists("dialectClass", $descriptor)) {
+            $descriptor["dialectClass"] = 'Phalcon\\Db\\Dialect\\' . ucfirst($this->dialectType);
         }
 
-        //$dsn = "sqlsrv:server=" . $descriptor['host'] . ";database=" . $descriptor['dbname'] . ";";
+        $dialectClass = $descriptor['dialectClass'];
+        $this->descriptor = $descriptor;
+
+        // 社内利用では TrustServerCertificate を使うケースが多いため、
+        // LoginTimeout=3 と TrustServerCertificate=true をデフォルトで含める。
         $dsn = "sqlsrv:server=" . $descriptor['host'] . ";database=" . $descriptor['dbname'] . ";LoginTimeout=3;TrustServerCertificate=true";
         $dbusername = $descriptor['username'];
         $dbpassword = $descriptor['password'];
 
-        $this->_pdo = new \PDO($dsn, $dbusername, $dbpassword);
-        $this->_pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-
-        /*
-         * Set dialect class
-         */
-        if (isset($descriptor['dialectClass']) === false) {
-            $dialectClass = 'Phalcon\\Db\\Dialect\\' . ucfirst($this->_dialectType);
-        } else {
-            $dialectClass = $descriptor['dialectClass'];
-        }
+        $this->pdo = new \PDO($dsn, $dbusername, $dbpassword);
+        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, true);
 
         /*
          * Create the instance only if the dialect is a string
          */
         if (is_string($dialectClass) === true) {
             $dialectObject = new $dialectClass();
-            $this->_dialect = $dialectObject;
+            $this->dialect = $dialectObject;
         }
     }
 
@@ -87,7 +78,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      *
      * @return \Phalcon\Db\Column
      */
-    public function describeColumns($table, $schema = null)
+    public function describeColumns(string $table, ?string $schema = null): array
     {
         $oldColumn = null;
 
@@ -95,7 +86,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
          * Get primary keys
          */
         $primaryKeys = array();
-        foreach ($this->fetchAll($this->_dialect->getPrimaryKey($table, $schema)) as $field) {
+        foreach ($this->fetchAll($this->dialect->getPrimaryKey($table, $schema)) as $field) {
             $primaryKeys[$field['COLUMN_NAME']] = true;
         }
 
@@ -105,7 +96,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
          * Get the describe
          * Field Indexes: 0:name, 1:type, 2:not null, 3:key, 4:default, 5:extra
          */
-        foreach ($this->fetchAll($this->_dialect->describeColumns($table, $schema)) as $field) {
+        foreach ($this->fetchAll($this->dialect->describeColumns($table, $schema)) as $field) {
             /*
              * By default the bind types is two
              */
@@ -232,7 +223,6 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
             $definition['precision'] = (int) $field['PRECISION'];
 
             if ($field['SCALE'] || $field['SCALE'] == '0') {
-                //                $definition["scale"] = (int) $field['SCALE'];
                 $definition['size'] = $definition['precision'];
             }
 
@@ -255,8 +245,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
             /*
              * Check if the column allows null values
              */
-            if ($field['NULLABLE'] == 0) {
-                $definition['notNull'] = true;
+            if ($field['NULLABLE'] == 1) {
+                $definition['notNull'] = false;
             }
 
             /*
@@ -296,37 +286,32 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
      *
      * @return bool|\Phalcon\Db\ResultInterface
      */
-    public function query($sqlStatement, $bindParams = null, $bindTypes = null)
+    public function query($sqlStatement, $bindParams = [], $bindTypes = [])
     {
-        $eventsManager = $this->_eventsManager;
+        $eventsManager = $this->eventsManager;
 
         /*
          * Execute the beforeQuery event if a EventsManager is available
          */
         if (is_object($eventsManager)) {
-            $this->_sqlStatement = $sqlStatement;
-            $this->_sqlVariables = $bindParams;
-            $this->_sqlBindTypes = $bindTypes;
+            $this->sqlStatement = $sqlStatement;
+            $this->sqlVariables = $bindParams;
+            $this->sqlBindTypes = $bindTypes;
 
             if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
                 return false;
             }
         }
 
-        $pdo = $this->_pdo;
-
         $cursor = \PDO::CURSOR_SCROLL;
         if (strpos($sqlStatement, 'exec') !== false) {
             $cursor = \PDO::CURSOR_FWDONLY;
         }
 
-        if (is_array($bindParams)) {
-            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-            if (is_object($statement)) {
-                $statement = $this->executePrepared($statement, $bindParams, $bindTypes);
-            }
+        $statement = $this->pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
+        if (is_array($bindParams) && is_object($statement)) {
+            $statement = $this->executePrepared($statement, $bindParams, $bindTypes);
         } else {
-            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
             $statement->execute();
         }
 
@@ -344,72 +329,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo implements \Phalcon\Db\AdapterInter
         return $statement;
     }
 
-    /**
-     * Sends SQL statements to the database server returning the success state.
-     * Use this method only when the SQL statement sent to the server doesn't return any rows
-     * <code>
-     * //Inserting data
-     * $success = $connection->execute("INSERT INTO robots VALUES (1, 'Astro Boy')");
-     * $success = $connection->execute("INSERT INTO robots VALUES (?, ?)", array(1, 'Astro Boy'));
-     * </code>.
-     *
-     * @param string $sqlStatement
-     * @param mixed  $bindParams
-     * @param mixed  $bindTypes
-     *
-     * @return bool
-     */
-//    public function execute($sqlStatement, $bindParams = null, $bindTypes = null)
-    //    {
-    //        $eventsManager = $this->_eventsManager;
-    //
-    //        /*
-    //         * Execute the beforeQuery event if a EventsManager is available
-    //         */
-    //        if (is_object($eventsManager)) {
-    //            $this->_sqlStatement = $sqlStatement;
-    //            $this->_sqlVariables = $bindParams;
-    //            $this->_sqlBindTypes = $bindTypes;
-    //
-    //            if ($eventsManager->fire('db:beforeQuery', $this, $bindParams) === false) {
-    //                return false;
-    //            }
-    //        }
-    //
-    //        /*
-    //         * Initialize affectedRows to 0
-    //         */
-    //        $affectedRows = 0;
-    //
-    //        $pdo = $this->_pdo;
-    //
-    //        $cursor = \PDO::CURSOR_SCROLL;
-    //        if (strpos($sqlStatement, 'exec') !== false) {
-    //            $cursor = \PDO::CURSOR_FWDONLY;
-    //        }
-    //
-    //        if (is_array($bindParams)) {
-    //            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    //            if (is_object($statement)) {
-    //                $newStatement = $this->executePrepared($statement, $bindParams, $bindTypes);
-    //                $affectedRows = $newStatement->rowCount();
-    //            }
-    //        } else {
-    ////            $statement = $pdo->prepare($sqlStatement, array(\PDO::ATTR_CURSOR => $cursor));
-    ////            $statement->execute();
-    //            $affectedRows = $pdo->exec($sqlStatement);
-    //        }
-    //
-    //        /*
-    //         * Execute the afterQuery event if an EventsManager is available
-    //         */
-    //        if (is_int($affectedRows)) {
-    //            $this->_affectedRows = affectedRows;
-    //            if (is_object($eventsManager)) {
-    //                $eventsManager->fire('db:afterQuery', $this, $bindParams);
-    //            }
-    //        }
-    //
-    //        return true;
-    //    }
+    protected function getDsnDefaults(): array
+    {
+        return [];
+    }
 }
