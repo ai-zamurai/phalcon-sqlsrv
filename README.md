@@ -123,6 +123,10 @@ Phalcon/
     └── Adapter/Database.php      # Database Logger
 ```
 
+## Documentation & Workflow
+
+Documentation under [`docs/`](docs/) and the Git / review workflow used in this repository are organized following the [feel-flow/ai-spec-driven-development](https://github.com/feel-flow/ai-spec-driven-development) framework — a spec-driven development approach optimized for AI coding agents. Start at [`docs/MASTER.md`](docs/MASTER.md) for the documentation map.
+
 ## Credits
 
 Forked from [bakaphp/phalcon-sqlsrv](https://github.com/bakaphp/phalcon-sqlsrv).
