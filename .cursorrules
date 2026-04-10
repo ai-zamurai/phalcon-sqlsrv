@@ -4,7 +4,7 @@ Load these rules before suggesting code in this repository.
 
 ## Project
 
-ai-zamurai/phalcon-sqlsrv — a Composer library providing a Microsoft SQL Server PDO adapter for the Phalcon PHP framework (Phalcon 4+). Forked from bakaphp/phalcon-sqlsrv. Canonical documentation lives under `docs/`; start at `docs/MASTER.md`.
+ai-zamurai/phalcon-sqlsrv — a Composer library providing a Microsoft SQL Server PDO adapter for the Phalcon PHP framework (Phalcon 4+). Forked from bakaphp/phalcon-sqlsrv. Canonical documentation lives under `docs/`; start at [`docs/MASTER.md`](docs/MASTER.md).
 
 ## Stack
 
@@ -26,14 +26,17 @@ Phalcon/Logger/Adapter/Database.php — DB-backed logger adapter
 
 ## Hard Rules
 
+These nine rules are mirrored verbatim in CLAUDE.md, AGENTS.md, and .github/copilot-instructions.md. Keep all four lists in sync when editing.
+
 1. Keep namespaces `Phalcon\Db\…` and `Phalcon\Logger\…`. Never rename.
 2. Every public method must match the Phalcon 4 parent signature including return type hints.
 3. The dialect is pure: no PDO calls, no I/O, no events inside `Phalcon\Db\Dialect\Sqlsrv`.
 4. Wrap SQL Server identifiers in square brackets: `[column_name]`.
 5. Throw `Phalcon\Db\Exception` for unknown column types instead of falling back silently.
 6. DSN defaults `LoginTimeout=3` and `TrustServerCertificate=true` are intentional — see `docs/06-reference/DECISIONS.md` ADR-002 and ADR-003. Do not remove them.
-7. Never add Composer dependencies without an ADR entry.
-8. No secrets in commits.
+7. Never add Composer dependencies without an ADR entry in `docs/06-reference/DECISIONS.md`.
+8. Documentation language is English for `docs/`, CLAUDE.md, AGENTS.md, .cursorrules, .github/copilot-instructions.md. GitHub Issues and PRs stay Japanese.
+9. No secrets in commits.
 
 ## Code Style
 
@@ -45,7 +48,7 @@ Phalcon/Logger/Adapter/Database.php — DB-backed logger adapter
 
 ## Documentation Language
 
-English only for everything under `docs/`, plus `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and this file. GitHub Issues and Pull Requests stay Japanese per the maintainer's global policy.
+See Hard Rule #8. Authoritative source: `docs/06-reference/DECISIONS.md` ADR-006.
 
 ## Git Workflow
 

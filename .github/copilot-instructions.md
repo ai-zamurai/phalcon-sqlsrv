@@ -4,7 +4,7 @@ Use these instructions for all code suggestions in this repository. They take pr
 
 ## Repository Purpose
 
-`ai-zamurai/phalcon-sqlsrv` is a Composer library that ships a Microsoft SQL Server PDO adapter for the Phalcon framework (Phalcon 4+). It is a fork of `bakaphp/phalcon-sqlsrv`. Full context: `docs/MASTER.md`.
+`ai-zamurai/phalcon-sqlsrv` is a Composer library that ships a Microsoft SQL Server PDO adapter for the Phalcon framework (Phalcon 4+). It is a fork of `bakaphp/phalcon-sqlsrv`. Full context: [`docs/MASTER.md`](../docs/MASTER.md).
 
 ## Stack Constraints
 
@@ -27,16 +27,20 @@ Phalcon/
 
 ## Code Generation Rules
 
+These nine rules are mirrored verbatim in `CLAUDE.md`, `AGENTS.md`, and `.cursorrules`. Keep all four lists in sync when editing.
+
 1. **Never rename namespaces.** Classes live under `Phalcon\Db\…` or `Phalcon\Logger\…`.
 2. **Match Phalcon 4 method signatures exactly**, including return type hints:
-   - `public function connect(array $descriptor = null): bool`
+   - `public function connect(?array $descriptor = null): bool`
    - `public function describeColumns(string $table, ?string $schema = null): array`
    - `public function numRows(): int`
 3. **Dialect must remain pure.** Do not introduce PDO calls, file I/O, or event firing inside `Phalcon\Db\Dialect\Sqlsrv`. It only returns SQL strings.
 4. **Wrap identifiers in square brackets**: `[column_name]`, `[schema].[table]`.
 5. **Throw `Phalcon\Db\Exception`** for unrecognised column types in the dialect — do not silently fall back.
-6. **Preserve DSN defaults**: `LoginTimeout=3` and `TrustServerCertificate=true`. These are documented decisions.
-7. **Never add new Composer dependencies** without checking `docs/06-reference/DECISIONS.md` first.
+6. **Preserve DSN defaults**: `LoginTimeout=3` and `TrustServerCertificate=true`. These are documented decisions (see `docs/06-reference/DECISIONS.md` ADR-002, ADR-003).
+7. **Never add new Composer dependencies** without an ADR entry in `docs/06-reference/DECISIONS.md`.
+8. **Documentation language is English** for `docs/`, `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and this file. GitHub Issues and Pull Requests stay Japanese.
+9. **No secrets in commits.** SQL Server credentials, connection strings, and `.env` files never enter git.
 
 ## Code Style
 
@@ -48,7 +52,7 @@ Phalcon/
 
 ## Documentation Changes
 
-All files under `docs/`, `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and this file must be written in English. GitHub Issues and Pull Requests remain in Japanese per the maintainer's global policy.
+Language rule: see Code Generation Rule #8. Authoritative source: `docs/06-reference/DECISIONS.md` ADR-006.
 
 Every doc file carries YAML frontmatter with `id`, `title`, `version`, `status`, `created`, `updated`, `owner`, `phase`, `tags`, `references`, `changeImpact`. When editing a doc, bump `version` (semver) and update `updated`.
 

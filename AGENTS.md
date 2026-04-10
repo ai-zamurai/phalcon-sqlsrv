@@ -8,10 +8,10 @@ Tool-agnostic instructions for any AI agent (Claude Code, GitHub Copilot, Cursor
 
 ## Entry Points
 
-- `docs/MASTER.md` — documentation hub. **Read first.**
-- `docs/01-context/PROJECT.md` — vision and scope.
-- `docs/02-design/ARCHITECTURE.md` — component layering.
-- `docs/06-reference/DECISIONS.md` — hard constraints and trade-offs.
+- [`docs/MASTER.md`](docs/MASTER.md) — documentation hub. **Read first.**
+- [`docs/01-context/PROJECT.md`](docs/01-context/PROJECT.md) — vision and scope.
+- [`docs/02-design/ARCHITECTURE.md`](docs/02-design/ARCHITECTURE.md) — component layering.
+- [`docs/06-reference/DECISIONS.md`](docs/06-reference/DECISIONS.md) — hard constraints and trade-offs.
 
 ## Source Layout
 
@@ -35,12 +35,17 @@ composer.json                   — PHP >= 7.4, ext-phalcon >= 4.0
 
 ## Non-Negotiable Rules
 
+These nine rules are mirrored verbatim in [`CLAUDE.md`](CLAUDE.md), [`.cursorrules`](.cursorrules), and [`.github/copilot-instructions.md`](.github/copilot-instructions.md). Keep all four lists in sync when editing.
+
 1. **Namespaces are frozen.** Keep `Phalcon\Db\…` and `Phalcon\Logger\…`.
 2. **Method signatures must match Phalcon 4 parents** including return type hints.
 3. **Dialect is pure.** No PDO, no filesystem, no events in `Phalcon\Db\Dialect\Sqlsrv`.
-4. **DSN defaults `TrustServerCertificate=true` and `LoginTimeout=3` are intentional** — see `docs/06-reference/DECISIONS.md` ADR-002 and ADR-003.
-5. **Documentation language: English.** All files under `docs/` and every AI agent config file are English. GitHub Issues and PRs stay Japanese.
-6. **No secrets in git.** Ever.
+4. **Wrap SQL Server identifiers in `[brackets]`** inside dialect output.
+5. **Throw `Phalcon\Db\Exception`** for unknown column types in the dialect. Never silently coerce.
+6. **DSN defaults `TrustServerCertificate=true` and `LoginTimeout=3` are intentional** — see `docs/06-reference/DECISIONS.md` ADR-002 and ADR-003.
+7. **No new Composer dependencies without an ADR entry** in `docs/06-reference/DECISIONS.md`.
+8. **Documentation language: English.** All files under `docs/`, plus `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and `.github/copilot-instructions.md`, are written in English. GitHub Issues and PRs stay Japanese.
+9. **No secrets in git.** Ever.
 
 ## Coding Conventions
 

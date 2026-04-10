@@ -27,10 +27,10 @@ Read this file first. It is the entry point for every Claude Code session on thi
 
 Before doing anything, load context from:
 
-1. `docs/MASTER.md` — documentation navigation hub
-2. `docs/01-context/PROJECT.md` — what we build and why
-3. `docs/02-design/ARCHITECTURE.md` — Adapter / Dialect / Result layering
-4. `docs/06-reference/DECISIONS.md` — accepted trade-offs (TrustServerCertificate, LoginTimeout, etc.)
+1. [`docs/MASTER.md`](docs/MASTER.md) — documentation navigation hub
+2. [`docs/01-context/PROJECT.md`](docs/01-context/PROJECT.md) — what we build and why
+3. [`docs/02-design/ARCHITECTURE.md`](docs/02-design/ARCHITECTURE.md) — Adapter / Dialect / Result layering
+4. [`docs/06-reference/DECISIONS.md`](docs/06-reference/DECISIONS.md) — accepted trade-offs (TrustServerCertificate, LoginTimeout, etc.)
 
 If a user request conflicts with a decision in `DECISIONS.md`, flag the conflict — do not silently override.
 
@@ -40,7 +40,7 @@ If a user request conflicts with a decision in `DECISIONS.md`, flag the conflict
 |-------|------------|-------------------|
 | Language | PHP | `>= 7.4` |
 | Framework extension | Phalcon (`ext-phalcon`) | `>= 4.0` |
-| PDO driver | `pdo_sqlsrv` / MS ODBC Driver 17+ | required at runtime |
+| PDO driver | `pdo_sqlsrv` (see [`docs/01-context/CONSTRAINTS.md`](docs/01-context/CONSTRAINTS.md) for OS-specific install notes) | required at runtime |
 | Package manager | Composer | PSR-4 autoload |
 | Target DB | Microsoft SQL Server | `2012+` (for OFFSET/FETCH) |
 
@@ -76,12 +76,17 @@ There is no test runner configured yet. Smoke tests are manual — see `docs/04-
 
 ## Critical Rules (Do Not Violate)
 
+These eight rules are mirrored verbatim in [`AGENTS.md`](AGENTS.md), [`.cursorrules`](.cursorrules), and [`.github/copilot-instructions.md`](.github/copilot-instructions.md). Keep all four lists in sync when editing.
+
 1. **Never change namespaces.** Classes stay under `Phalcon\Db\…` and `Phalcon\Logger\…`. Users depend on this for drop-in upgrades from upstream.
 2. **Phalcon 4 signatures are mandatory.** Every public method must match `AbstractPdo` / `AdapterInterface` including return type hints.
 3. **Dialect is pure.** No PDO, no I/O, no events inside `Phalcon\Db\Dialect\Sqlsrv`.
-4. **Do not remove `TrustServerCertificate=true` or `LoginTimeout=3`** without first updating `docs/06-reference/DECISIONS.md` and opening a discussion.
-5. **English-only documentation.** All files under `docs/`, plus this file and the other AI agent config files, are written in English. GitHub Issues and Pull Requests remain in Japanese.
-6. **No secrets in commits.** SQL Server credentials, connection strings to real servers, and `.env` files never enter git.
+4. **Wrap SQL Server identifiers in `[brackets]`** inside dialect output — `[column_name]`, `[schema].[table]`.
+5. **Throw `Phalcon\Db\Exception`** for unknown column types in the dialect. Never silently coerce.
+6. **Do not remove `TrustServerCertificate=true` or `LoginTimeout=3`** without first updating `docs/06-reference/DECISIONS.md` and opening a discussion.
+7. **No new Composer dependencies without an ADR entry** in `docs/06-reference/DECISIONS.md`.
+8. **English-only documentation.** All files under `docs/`, plus `CLAUDE.md`, `AGENTS.md`, `.cursorrules`, and `.github/copilot-instructions.md`, are written in English. GitHub Issues and Pull Requests remain in Japanese.
+9. **No secrets in commits.** SQL Server credentials, connection strings to real servers, and `.env` files never enter git.
 
 ## Git Workflow (Summary)
 
