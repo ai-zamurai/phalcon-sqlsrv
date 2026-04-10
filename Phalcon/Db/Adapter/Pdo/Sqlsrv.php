@@ -34,7 +34,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
      *
      * @return bool
      */
-    public function connect(?array $descriptor = []): void
+    public function connect(array $descriptor = null): bool
     {
         if (is_null($descriptor) === true) {
             $descriptor = $this->descriptor;
@@ -64,6 +64,8 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
             $dialectObject = new $dialectClass();
             $this->dialect = $dialectObject;
         }
+
+        return true;
     }
 
     /**
