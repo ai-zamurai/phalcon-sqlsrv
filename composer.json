@@ -1,6 +1,7 @@
 {
     "name": "ai-zamurai/phalcon-sqlsrv",
     "description": "Phalcon - MS SQL Server (PDO) Adapter (Phalcon 4 compatible fork)",
+    "license": "BSD-3-Clause",
     "keywords": ["framework", "phalcon", "sqlsrv"],
     "authors": [{
         "name": "ToNict",
