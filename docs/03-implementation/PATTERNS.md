@@ -1,7 +1,7 @@
 ---
 id: patterns
 title: Implementation Patterns
-version: 1.0.0
+version: 1.0.1
 status: active
 created: 2026-04-10
 updated: 2026-04-10

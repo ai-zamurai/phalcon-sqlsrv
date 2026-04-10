@@ -1,7 +1,7 @@
 ---
 id: decisions
 title: Architecture Decision Records
-version: 1.0.0
+version: 1.0.1
 status: active
 created: 2026-04-10
 updated: 2026-04-10
@@ -58,8 +58,14 @@ ADR-lite log. Each entry captures *what* was decided, *why*, and *what we would 
 - **Consequences**:
   - **Case-insensitive**: `exec`, `EXEC`, `Exec`, `EXECUTE`, and `Execute` all correctly trigger `CURSOR_FWDONLY` — matching T-SQL's own case-insensitivity.
   - **Word-boundary match**: identifiers like `executive_summary` or `exec_log` no longer produce false positives, because `\b` requires the keyword to stand alone.
-  - **Residual false positives**: a SELECT that contains a standalone `exec` / `execute` token inside a string literal still gets `CURSOR_FWDONLY`. A fully correct fix would require tokenising the statement, which upstream has not done.
-- **Reconsider if**: The residual string-literal false positive bites a production caller, or upstream Phalcon changes the cursor contract. A proper fix would tokenise the statement rather than regex-match.
+  - **Residual false positives**: the heuristic still scans the raw statement, so a SELECT with a standalone `exec` / `execute` token inside any of the following contexts will still get `CURSOR_FWDONLY`:
+    - string literals (e.g. `SELECT 'exec something'`)
+    - SQL comments (`/* exec */ SELECT 1`, `-- exec`)
+    - bracketed identifiers (`SELECT [exec] FROM ...`) — note that `\b` treats `[` as a non-word boundary, so `[exec]` still matches
+    - column aliases (`SELECT 1 AS execute`)
+    - multi-statement batches where any statement is an `EXEC` (`SELECT ...; EXEC sp_who`)
+    A fully correct fix would require tokenising the statement (or matching only the first executable keyword after optional whitespace/comments), which upstream has not done.
+- **Reconsider if**: Any of the residual false positives above bite a production caller, or upstream Phalcon changes the cursor contract. A proper fix would tokenise the statement rather than regex-match.
 
 ## ADR-005: `Dialect::limit()` appends `ORDER BY 1` when absent
 
