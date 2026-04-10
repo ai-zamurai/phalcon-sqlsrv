@@ -31,7 +31,7 @@ class PdoSqlsrv extends \Phalcon\Db\Result\Pdo
             $rowCount = $this->pdoStatement->rowCount();
 
             if ($rowCount === false) {
-                parent::numRows();
+                $rowCount = parent::numRows();
             }
 
             $this->rowCount = $rowCount;
