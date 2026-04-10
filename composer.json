@@ -1,5 +1,5 @@
 {
-    "name": "f-okazaki/phalcon-sqlsrv",
+    "name": "ai-zamurai/phalcon-sqlsrv",
     "description": "Phalcon - MS SQL Server (PDO) Adapter (Phalcon 4 compatible fork)",
     "keywords": ["framework", "phalcon", "sqlsrv"],
     "authors": [{
