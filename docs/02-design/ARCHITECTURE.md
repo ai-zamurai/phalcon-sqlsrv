@@ -1,7 +1,7 @@
 ---
 id: architecture
 title: Architecture
-version: 1.0.0
+version: 1.0.1
 status: active
 created: 2026-04-10
 updated: 2026-04-10
@@ -61,7 +61,7 @@ The package follows Phalcon's standard database adapter shape: **Adapter → Dia
 
 - **Dialect is stateless**: it takes strings/columns in, returns SQL out. No PDO access inside the dialect.
 - **Adapter owns PDO**: all statement preparation, execution, and cursor selection lives in `Sqlsrv::query()`.
-- **Cursor selection**: if the SQL contains the **lowercase** substring `exec`, use `PDO::CURSOR_FWDONLY`; otherwise `PDO::CURSOR_SCROLL`. The match is case-sensitive — `EXEC` / `Exec` / `EXECUTE` fall through to `CURSOR_SCROLL`. See ADR-004 in `../06-reference/DECISIONS.md`.
+- **Cursor selection**: if the SQL matches `\b(exec|execute)\b` (case-insensitive, word-boundary), use `PDO::CURSOR_FWDONLY`; otherwise `PDO::CURSOR_SCROLL`. See ADR-004 in `../06-reference/DECISIONS.md`.
 - **Type-mapping lives in the Adapter, not the Dialect**. `describeColumns()` walks raw `sp_columns` rows and emits `Phalcon\Db\Column` objects — see `DOMAIN.md` for the mapping table.
 
 ## Interaction with Phalcon DI

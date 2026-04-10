@@ -305,7 +305,7 @@ class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\
         }
 
         $cursor = \PDO::CURSOR_SCROLL;
-        if (strpos($sqlStatement, 'exec') !== false) {
+        if (preg_match('/\b(exec|execute)\b/i', $sqlStatement) === 1) {
             $cursor = \PDO::CURSOR_FWDONLY;
         }
 
