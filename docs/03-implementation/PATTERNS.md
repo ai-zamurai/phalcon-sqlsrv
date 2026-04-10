@@ -43,17 +43,20 @@ All overridden methods **must** match the parent interface including return type
 
 | Good | Why |
 |------|-----|
-| `public function connect(array $descriptor = null): bool` | Matches `AbstractPdo::connect()` |
+| `public function connect(?array $descriptor = null): bool` | Matches `AbstractPdo::connect()` |
 | `public function describeColumns(string $table, ?string $schema = null): array` | Matches interface |
 | `public function numRows(): int` | Matches `Result\Pdo::numRows()` |
+
+> **PHP version note**: the current source still uses the implicit-nullable form `array $descriptor = null` which PHP 8.4+ deprecates. When bumping the minimum PHP version, migrate to the explicit `?array` form shown above. Track in a follow-up issue before bumping.
 
 When in doubt, run the `phalcon-compat-check` skill (see `.claude/skills/phalcon-compat-check/`).
 
 ## PDO Usage
 
-- Always go through `$this->pdo->prepare()` → `executePrepared()`; never use `PDO::query()` directly in the adapter.
+- Always go through `$this->pdo->prepare()`. If `$bindParams` is an array, call `executePrepared($statement, $bindParams, $bindTypes)`; otherwise fall back to `$statement->execute()` directly. Both branches exist in `Sqlsrv::query()` by design — do not "clean up" the fallback.
+- Never use `PDO::query()` directly in the adapter.
 - Keep `PDO::ATTR_ERRMODE = ERRMODE_EXCEPTION` — rely on exceptions, not boolean returns.
-- Choose cursor type based on statement shape: `CURSOR_FWDONLY` for `exec`/stored procedures, `CURSOR_SCROLL` otherwise.
+- Choose cursor type based on statement shape: `CURSOR_FWDONLY` when the SQL contains the lowercase substring `exec`, `CURSOR_SCROLL` otherwise. The match is case-sensitive — see ADR-004.
 
 ## Event Emission
 
@@ -69,7 +72,7 @@ When in doubt, run the `phalcon-compat-check` skill (see `.claude/skills/phalcon
 ## Exception Handling
 
 - Do not swallow PDO exceptions in the adapter; let them propagate. Phalcon's upper layers translate them.
-- Logger adapter (`Phalcon\Logger\Adapter\Database`) is the only place that may catch and ignore, and only for non-critical logging failures — currently it does not, which is intentional: a broken log table should surface.
+- The logger adapter (`Phalcon\Logger\Adapter\Database`) also lets exceptions propagate — a broken log table must surface loudly, not disappear.
 
 ## Code Style
 

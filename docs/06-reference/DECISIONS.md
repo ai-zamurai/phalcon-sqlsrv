@@ -38,7 +38,7 @@ ADR-lite log. Each entry captures *what* was decided, *why*, and *what we would 
 - **Consequences**:
   - Connections succeed out of the box in trusted internal networks.
   - **Security trade-off**: the adapter does not validate the server certificate, so it is vulnerable to MITM on untrusted networks. Callers who need strict TLS must not use this adapter as-is.
-- **Reconsider if**: A configurable `trustServerCertificate` descriptor key is added to let callers opt in/out. Track in a future issue.
+- **Reconsider if**: A configurable `trustServerCertificate` descriptor key is added to let callers opt in/out.
 
 ## ADR-003: Set `LoginTimeout=3` by default
 
@@ -52,12 +52,13 @@ ADR-lite log. Each entry captures *what* was decided, *why*, and *what we would 
 ## ADR-004: Cursor selection heuristic in `query()`
 
 - **Date**: Inherited from upstream, documented here.
-- **Status**: Accepted
+- **Status**: Accepted (known limitation)
 - **Context**: SQL Server stored-procedure execution (`exec`) does not play well with scrollable cursors. Regular SELECTs benefit from `CURSOR_SCROLL` because it lets `numRows()` return early.
-- **Decision**: If the statement contains the substring `exec`, use `PDO::CURSOR_FWDONLY`. Otherwise `PDO::CURSOR_SCROLL`.
+- **Decision**: If `strpos($sqlStatement, 'exec') !== false`, use `PDO::CURSOR_FWDONLY`. Otherwise `PDO::CURSOR_SCROLL`.
 - **Consequences**:
-  - False positives: a SELECT that contains the word "exec" in a string literal still gets `CURSOR_FWDONLY`. Acceptable — scroll is an optimisation, not correctness.
-- **Reconsider if**: A more robust parser becomes cheap, or upstream Phalcon changes the cursor contract.
+  - **Case-sensitive match**: only lowercase `exec` triggers `CURSOR_FWDONLY`. `EXEC`, `Exec`, and `EXECUTE` — all valid T-SQL — fall through to `CURSOR_SCROLL`. Calling a stored procedure with uppercase `EXEC` can therefore produce unexpected cursor behavior. Callers in this fork's codebase currently rely on lowercase `exec`.
+  - **False positives**: a SELECT that contains the lowercase substring `exec` in a string literal still gets `CURSOR_FWDONLY`.
+- **Reconsider if**: The case-sensitivity bites a production caller, or upstream Phalcon changes the cursor contract. Any fix should be case-insensitive and tokenise rather than substring-match.
 
 ## ADR-005: `Dialect::limit()` appends `ORDER BY 1` when absent
 

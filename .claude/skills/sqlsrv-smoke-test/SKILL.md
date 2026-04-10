@@ -95,10 +95,18 @@ Verify every column type is a `Phalcon\Db\Column::TYPE_*` constant — none shou
 
 ## Step 4: Paging Query
 
+Reuse the same env-var descriptor from Step 2:
+
 ```bash
 php -r '
 require "vendor/autoload.php";
-$conn = new \Phalcon\Db\Adapter\Pdo\Sqlsrv([...]);
+
+$conn = new \Phalcon\Db\Adapter\Pdo\Sqlsrv([
+    "host"     => getenv("SQLSRV_HOST"),
+    "dbname"   => getenv("SQLSRV_DB"),
+    "username" => getenv("SQLSRV_USER"),
+    "password" => getenv("SQLSRV_PASS"),
+]);
 
 $sql = $conn->getDialect()->limit("SELECT name FROM sys.tables", [0, 5]);
 echo "paged SQL: " . $sql . PHP_EOL;

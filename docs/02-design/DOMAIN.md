@@ -30,10 +30,10 @@ The "domain" of this package is **SQL Server schema introspection and SQL genera
 
 ## Column Type Mapping (SQL Server → Phalcon)
 
-`Sqlsrv::describeColumns()` walks `EXEC sp_columns` output and maps each `TYPE_NAME` to a `Phalcon\Db\Column` type constant.
+`Sqlsrv::describeColumns()` walks `EXEC sp_columns` output and maps each `TYPE_NAME` to a `Phalcon\Db\Column` type constant. The bind type defaults to `BIND_PARAM_STR` unless the `switch` explicitly overrides it — the `Bind override` column below only lists the explicit overrides.
 
-| SQL Server type | Phalcon `Column::TYPE_*` | Bind type | Notes |
-|-----------------|--------------------------|-----------|-------|
+| SQL Server type | Phalcon `Column::TYPE_*` | Bind override | Notes |
+|-----------------|--------------------------|---------------|-------|
 | `int identity`, `tinyint identity`, `smallint identity` | `TYPE_INTEGER` | `BIND_PARAM_INT` | `autoIncrement=true` |
 | `bigint` | `TYPE_BIGINTEGER` | `BIND_PARAM_INT` | |
 | `int`, `tinyint`, `smallint` | `TYPE_INTEGER` | `BIND_PARAM_INT` | |
@@ -41,14 +41,14 @@ The "domain" of this package is **SQL Server schema introspection and SQL genera
 | `numeric` | `TYPE_DOUBLE` | `BIND_PARAM_DECIMAL` | |
 | `float` | `TYPE_FLOAT` | `BIND_PARAM_DECIMAL` | |
 | `bit` | `TYPE_BOOLEAN` | `BIND_PARAM_BOOL` | |
-| `date` | `TYPE_DATE` | `BIND_PARAM_STR` | |
-| `datetime`, `datetime2`, `smalldatetime` | `TYPE_DATETIME` | `BIND_PARAM_STR` | |
-| `timestamp` | `TYPE_TIMESTAMP` | `BIND_PARAM_STR` | SQL Server `rowversion`, not a clock |
-| `char`, `nchar` | `TYPE_CHAR` | `BIND_PARAM_STR` | |
-| `varchar`, `nvarchar` | `TYPE_VARCHAR` | `BIND_PARAM_STR` | Dialect emits `NVARCHAR` on create |
-| `text`, `ntext` | `TYPE_TEXT` | `BIND_PARAM_STR` | |
-| `varbinary` | `TYPE_BLOB` | `BIND_PARAM_STR` | |
-| anything else | `TYPE_VARCHAR` | `BIND_PARAM_STR` | Safe fallback |
+| `date` | `TYPE_DATE` | — | |
+| `datetime`, `datetime2`, `smalldatetime` | `TYPE_DATETIME` | — | |
+| `timestamp` | `TYPE_TIMESTAMP` | — | SQL Server `rowversion`, not a clock |
+| `char`, `nchar` | `TYPE_CHAR` | — | |
+| `varchar`, `nvarchar` | `TYPE_VARCHAR` | — | Dialect emits `NVARCHAR` on create |
+| `text`, `ntext` | `TYPE_TEXT` | — | |
+| `varbinary` | `TYPE_BLOB` | — | Adapter only emits `TYPE_BLOB`; see dialect note below |
+| anything else | `TYPE_VARCHAR` | — | Safe fallback |
 
 ## SQL Generation Rules (Phalcon → SQL Server)
 
@@ -72,6 +72,8 @@ Selected mappings from `Dialect\Sqlsrv::getColumnDefinition()`:
 | `TYPE_TINYBLOB` | `VARBINARY(255)` |
 | unknown | throws `Phalcon\Db\Exception` |
 
+> **Asymmetry**: `Sqlsrv::describeColumns()` only ever produces `TYPE_BLOB` for SQL Server `varbinary` — it never emits `TYPE_MEDIUMBLOB` / `TYPE_LONGBLOB`. The dialect accepts those extra constants for callers constructing `Phalcon\Db\Column` objects manually (e.g., migration tools), not for introspection round-trips.
+
 ## Paging Contract
 
 `Dialect::limit($sql, $number)` produces:
@@ -85,4 +87,6 @@ If the query has no `ORDER BY`, `ORDER BY 1` is appended because SQL Server **re
 ## Locking Hints
 
 - `forUpdate($sql)` → appends `WITH (UPDLOCK)`
-- `sharedLock($sql)` → appends `WITH (NOLOCK)` (note: NOLOCK ≠ true shared read; accepted by this fork as the historical mapping)
+- `sharedLock($sql)` → appends `WITH (NOLOCK)`
+
+> `NOLOCK` permits dirty reads and is not semantically equivalent to a true shared read. This mapping is inherited from upstream — see `../06-reference/DECISIONS.md` before changing.
