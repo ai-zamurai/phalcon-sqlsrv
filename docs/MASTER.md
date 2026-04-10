@@ -54,7 +54,7 @@ When documents conflict, trust in this order (top wins):
 4. `02-design/ARCHITECTURE.md`
 5. Other documents
 
-If a document drifts from source, open an issue and fix the document, not the code.
+When a document contradicts the source code, treat the code as authoritative: open an issue and update the document to match.
 
 ## Document Update Policy
 

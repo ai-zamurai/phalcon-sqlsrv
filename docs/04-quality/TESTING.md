@@ -16,13 +16,13 @@ changeImpact: medium
 
 # Testing Strategy
 
-This is a small library, so the test strategy is deliberately lightweight: **smoke test what the compiler cannot catch**.
+Strategy: **smoke test what the compiler cannot catch**.
 
 ## Current State
 
 - `require-dev` includes `codeception/verify`.
 - No unit test suite is committed yet.
-- Phalcon 3 → 4 migration relied on manual signature review.
+- The Phalcon 3 → 4 migration relied on manual signature review.
 
 Adding tests is a welcome contribution. Start with the layers below.
 

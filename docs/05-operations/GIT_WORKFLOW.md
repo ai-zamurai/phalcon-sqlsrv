@@ -74,8 +74,8 @@ Closes #42
 4. **Implement** with atomic commits. Reference docs in commit bodies.
 5. **Self-review** before pushing — re-read the diff, run `composer validate`, run relevant smoke tests from `04-quality/TESTING.md`.
 6. **Push** and **open a PR** against `develop`.
-7. **Address reviews** by pushing more commits (do not force-push once a human has reviewed).
-8. **Squash or merge commit?** This project allows either. Prefer merge commits if the PR has meaningful intermediate history.
+7. **Address reviews** by pushing new commits. Do not force-push a branch after a human has left a review comment (rebasing before any review is fine).
+8. **Merge style.** Default to a merge commit. Use squash only for single-purpose PRs whose intermediate history is noise.
 9. **Delete the branch** after merge.
 
 ## Pull Request Rules

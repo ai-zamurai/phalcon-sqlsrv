@@ -72,13 +72,7 @@ If a tag turns out to be broken:
 
 ## Distribution Verification
 
-After release, verify from a clean directory:
-
-```bash
-mkdir /tmp/verify-phalcon-sqlsrv && cd /tmp/verify-phalcon-sqlsrv
-composer require ai-zamurai/phalcon-sqlsrv:vX.Y.Z
-php -r 'require "vendor/autoload.php"; new \Phalcon\Db\Adapter\Pdo\Sqlsrv([]);' # expect a connect-time error, not an autoload error
-```
+After release, run the canonical verification recipe in the [`phalcon-release` skill](../../.claude/skills/phalcon-release/SKILL.md) Step 5. The skill uses `ReflectionClass` so it succeeds silently — no spurious connect-time error to interpret.
 
 If the autoloader cannot find the class, the release is broken — issue a patch.
 
