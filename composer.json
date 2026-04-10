@@ -1,6 +1,6 @@
 {
-    "name": "baka/phalcon-sqlsrv",
-    "description": "Sage IT Component for Phalcon - MS SQL Server (PDO) Adapter",
+    "name": "f-okazaki/phalcon-sqlsrv",
+    "description": "Phalcon - MS SQL Server (PDO) Adapter (Phalcon 4 compatible fork)",
     "keywords": ["framework", "phalcon", "sqlsrv"],
     "authors": [{
         "name": "ToNict",
@@ -11,20 +11,18 @@
     },{
         "name": "Sage IT Solutions",
         "email": "daniel.davis@sageitsolutions.net"
+    },{
+        "name": "Futoshi Okazaki",
+        "email": "fut.oka@gmail.com"
     }],
     "support": {
-        "issues": "https://github.com/phalcon/incubator/issues",
-        "source": "https://github.com/phalcon/incubator",
-        "forum": "https://forum.phalconphp.com/",
-        "docs": "https://docs.phalconphp.com/",
-        "irc": "irc://irc.freenode.org/phalconphp",
-        "rss": "https://blog.phalconphp.com/rss",
-        "email": "support@phalconphp.com"
+        "issues": "https://github.com/ai-zamurai/phalcon-sqlsrv/issues",
+        "source": "https://github.com/ai-zamurai/phalcon-sqlsrv"
     },
     "require": {
         "php": ">=7.4",
         "ext-pdo": "*",
-        "ext-phalcon": ">= 5.1"
+        "ext-phalcon": ">= 4.0"
     },
     "require-dev": {
         "codeception/verify": "*"

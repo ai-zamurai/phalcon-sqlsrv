@@ -18,8 +18,7 @@ use Phalcon\Db\Result\PdoSqlsrv as ResultPdo;
  * $connection = new \Phalcon\Db\Adapter\Pdo\Sqlsrv($config);
  * </code>.
  *
- * @property \Phalcon\Db\Dialect\Sqlsrv $_dialect
- * @property \Phalcon\Config\Config $config
+ * @property \Phalcon\Db\Dialect\Sqlsrv $dialect
  */
 class Sqlsrv extends \Phalcon\Db\Adapter\Pdo\AbstractPdo implements \Phalcon\Db\Adapter\AdapterInterface
 {
