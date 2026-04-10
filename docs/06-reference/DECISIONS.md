@@ -51,14 +51,15 @@ ADR-lite log. Each entry captures *what* was decided, *why*, and *what we would 
 
 ## ADR-004: Cursor selection heuristic in `query()`
 
-- **Date**: Inherited from upstream, documented here.
-- **Status**: Accepted (known limitation)
-- **Context**: SQL Server stored-procedure execution (`exec`) does not play well with scrollable cursors. Regular SELECTs benefit from `CURSOR_SCROLL` because it lets `numRows()` return early.
-- **Decision**: If `strpos($sqlStatement, 'exec') !== false`, use `PDO::CURSOR_FWDONLY`. Otherwise `PDO::CURSOR_SCROLL`.
+- **Date**: Inherited from upstream; case-insensitivity fix landed 2026-04 (issue #5).
+- **Status**: Accepted
+- **Context**: SQL Server stored-procedure execution (`EXEC` / `EXECUTE`) does not play well with scrollable cursors. Regular SELECTs benefit from `CURSOR_SCROLL` because it lets `numRows()` return early.
+- **Decision**: If `preg_match('/\b(exec|execute)\b/i', $sqlStatement) === 1`, use `PDO::CURSOR_FWDONLY`. Otherwise `PDO::CURSOR_SCROLL`. The match is case-insensitive and uses word boundaries.
 - **Consequences**:
-  - **Case-sensitive match**: only lowercase `exec` triggers `CURSOR_FWDONLY`. `EXEC`, `Exec`, and `EXECUTE` — all valid T-SQL — fall through to `CURSOR_SCROLL`. Calling a stored procedure with uppercase `EXEC` can therefore produce unexpected cursor behavior. Callers in this fork's codebase currently rely on lowercase `exec`.
-  - **False positives**: a SELECT that contains the lowercase substring `exec` in a string literal still gets `CURSOR_FWDONLY`.
-- **Reconsider if**: The case-sensitivity bites a production caller, or upstream Phalcon changes the cursor contract. Any fix should be case-insensitive and tokenise rather than substring-match.
+  - **Case-insensitive**: `exec`, `EXEC`, `Exec`, `EXECUTE`, and `Execute` all correctly trigger `CURSOR_FWDONLY` — matching T-SQL's own case-insensitivity.
+  - **Word-boundary match**: identifiers like `executive_summary` or `exec_log` no longer produce false positives, because `\b` requires the keyword to stand alone.
+  - **Residual false positives**: a SELECT that contains a standalone `exec` / `execute` token inside a string literal still gets `CURSOR_FWDONLY`. A fully correct fix would require tokenising the statement, which upstream has not done.
+- **Reconsider if**: The residual string-literal false positive bites a production caller, or upstream Phalcon changes the cursor contract. A proper fix would tokenise the statement rather than regex-match.
 
 ## ADR-005: `Dialect::limit()` appends `ORDER BY 1` when absent
 

@@ -56,7 +56,7 @@ When in doubt, run the `phalcon-compat-check` skill (see `.claude/skills/phalcon
 - Always go through `$this->pdo->prepare()`. If `$bindParams` is an array, call `executePrepared($statement, $bindParams, $bindTypes)`; otherwise fall back to `$statement->execute()` directly. Both branches exist in `Sqlsrv::query()` by design — do not "clean up" the fallback.
 - Never use `PDO::query()` directly in the adapter.
 - Keep `PDO::ATTR_ERRMODE = ERRMODE_EXCEPTION` — rely on exceptions, not boolean returns.
-- Choose cursor type based on statement shape: `CURSOR_FWDONLY` when the SQL contains the lowercase substring `exec`, `CURSOR_SCROLL` otherwise. The match is case-sensitive — see ADR-004.
+- Choose cursor type based on statement shape: `CURSOR_FWDONLY` when the SQL matches `\b(exec|execute)\b` (case-insensitive, word-boundary), `CURSOR_SCROLL` otherwise. See ADR-004.
 
 ## Event Emission
 
